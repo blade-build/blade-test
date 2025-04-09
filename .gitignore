@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+/blade-bin
+/build32_*
+/build64*
