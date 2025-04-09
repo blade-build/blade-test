@@ -3,6 +3,3 @@
 
 # Treat .sh files (Unix shell scripts) with LF line endings
 *.sh text eol=lf
-
-# Ensure all other text files use the platform-native EOL unless overridden
-* text=auto
