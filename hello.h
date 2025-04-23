@@ -1,6 +1,4 @@
-#include <stdio.h>
-
-#include "good.h"
+#pragma once
 
 #include "first/first.h"
 #include "second/second.h"

@@ -1,12 +1,15 @@
-cc_library(
+cc_binary(
     name = 'hello',
     srcs = 'hello.cpp',
-    hdrs = [
-        'hello.h',
-        'good.h',
-    ],
     deps = [
-        #'first:first',
+        'first:first',
         'second:second',
     ]
 )
+
+'''
+hdrs = [
+    'hello.h',
+    'good.h',
+],
+'''

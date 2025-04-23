@@ -1,7 +1,9 @@
+#include "hello.h"
 #include <stdio.h>
-#include <string>
 
 int main()
 {
-    printf("hello");
+    puts("hello");
+    first();
+    second();
 }
