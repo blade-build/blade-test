@@ -34,3 +34,21 @@
 /blade-bin
 /build32_*
 /build64_*
+
+# Blade-specific build/cache artifacts
+/.blade.log
+/.SConstruct
+/blade_build_time.txt
+
+# Agent scratch space (never committed)
+/.agent/
+
+# macOS / IDE noise
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Python caches (build scripts etc.)
+__pycache__/
+*.pyc
