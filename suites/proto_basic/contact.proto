@@ -1,0 +1,37 @@
+// Copyright (c) 2026 The Blade Authors.
+// All rights reserved.
+//
+// Author: chen3feng <chen3feng@gmail.com>
+
+// Ported from blade-build/example/proto/contact.proto and rewritten
+// in proto3. The upstream example used implicit proto2 syntax with
+// ``required`` / ``optional`` qualifiers, which recent protoc
+// versions deprecate noisily. proto3 drops ``required`` outright and
+// treats every singular field as implicitly optional, which is
+// cleaner for a smoke suite whose only job is to prove that
+// proto_library wires protoc, the generated C++ sources, and
+// libprotobuf together.
+
+syntax = "proto3";
+
+package blade_test.proto_basic;
+
+message Person {
+    string name = 1;
+    int32 id = 2;
+    string email = 3;
+
+    enum PhoneType {
+        PHONE_TYPE_UNSPECIFIED = 0;
+        MOBILE = 1;
+        HOME = 2;
+        WORK = 3;
+    }
+
+    message PhoneNumber {
+        string number = 1;
+        PhoneType type = 2;
+    }
+
+    repeated PhoneNumber phone = 4;
+}
