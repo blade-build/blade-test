@@ -1,0 +1,91 @@
+---
+# Cross-repo smoke for this workspace: run the full //suites/... against
+# the sibling blade-build/v3 HEAD. This is the mirror of blade-build's own
+# e2e-smoke job (which clones blade-test@master as a sibling); together
+# the two sides pin the contract from both directions:
+#
+#   blade-build PR  -> e2e-smoke clones blade-test@master -> guards v3 -> test
+#   blade-test PR   -> this job clones blade-build@v3     -> guards test -> v3
+#
+# Keep the host setup steps in sync with
+# blade-build/.github/workflows/python-package.yml :: e2e-smoke. The only
+# additions here are:
+#   * actions/setup-java (java_basic needs a JDK; ubuntu-22.04 has OpenJDK
+#     preinstalled but we pin explicitly so the suite isn't at the mercy
+#     of runner image changes)
+#   * no Maven install: //thirdparty/junit vendors junit-4.13.2.jar and
+#     hamcrest-core-1.3.jar as prebuilt jars.
+
+name: Suites smoke
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  suites:
+    name: Suites smoke (blade-build v3)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout blade-test
+        uses: actions/checkout@v6
+        with:
+          path: blade-test
+
+      - name: Checkout blade-build (sibling, v3)
+        uses: actions/checkout@v6
+        with:
+          repository: blade-build/blade-build
+          ref: v3
+          path: blade-build
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install ninja
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+
+      - name: Install e2e toolchain (flex/bison/protoc)
+        # Pre-install toolchains that upcoming suites migrated from
+        # blade-build/example/ will need: lex_yacc -> flex + bison,
+        # proto_basic -> protoc + libprotobuf-dev, py_proto ->
+        # python3-protobuf at runtime. Idempotent no-ops for suites
+        # that don't consume them. Kept in sync with blade-build's
+        # e2e-smoke job to avoid drift.
+        run: |
+          sudo apt-get install -y flex bison protobuf-compiler libprotobuf-dev python3-protobuf
+
+      - name: Install googletest at BLADE_ROOT-expected prefix
+        # blade-test/BLADE_ROOT points cc search paths at
+        # /usr/local/opt/googletest/{include,lib} on Linux. Ubuntu's
+        # libgtest-dev ships sources only, so build + stage them there.
+        run: |
+          sudo apt-get install -y libgtest-dev libgmock-dev cmake
+          sudo cmake -S /usr/src/googletest -B /tmp/gtest-build \
+            -DCMAKE_INSTALL_PREFIX=/usr/local/opt/googletest
+          sudo cmake --build /tmp/gtest-build --target install -j
+
+      - name: Show toolchain versions
+        run: |
+          python3 --version
+          javac -version
+          java -version
+          ninja --version
+          protoc --version
+
+      - name: Run blade-test suites
+        working-directory: blade-test
+        run: |
+          ./blade.sh test //suites/...
