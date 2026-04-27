@@ -1,0 +1,24 @@
+// Copyright (c) 2026 The Blade Authors.
+// All rights reserved.
+//
+// Author: chen3feng <chen3feng@gmail.com>
+
+// Second proto file in the same proto_library, deliberately placed in
+// a subdirectory to exercise blade's proto path handling: protoc
+// needs the package/include root set up correctly for
+// ``suites/proto_basic/dir/contact.proto`` to produce headers that
+// downstream C++ can include as ``suites/proto_basic/dir/contact.pb.h``.
+
+syntax = "proto3";
+
+package blade_test.proto_basic.sub;
+
+// Intentionally a distinct package from contact.proto so that a
+// generated-code mix-up (e.g. both files emitting into the same
+// namespace) would fail to compile rather than silently overwrite.
+
+message Person2 {
+    string name = 1;
+    int32 id = 2;
+    string email = 3;
+}
