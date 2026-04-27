@@ -1,0 +1,65 @@
+# BLADE_ROOT — configuration for the blade-test regression workspace.
+#
+# Host assumptions (macOS + Homebrew or equivalent on Linux):
+#   * googletest (gtest/gmock) installed under $(brew --prefix googletest)
+#     (headers in include/, static libs in lib/).
+#   * protobuf 21+ installed (headers/libs under brew prefix or /usr).
+#   * thrift installed (headers/libs under brew prefix or /usr).
+#   * junit+hamcrest jars vendored in thirdparty/junit/ (see that directory).
+#
+# On Linux the brew_prefix_* paths fall back to /usr — adjust locally if needed.
+
+import os
+import platform
+
+_BREW_PREFIX = '/opt/homebrew' if platform.system() == 'Darwin' else '/usr/local'
+_GTEST_PREFIX = os.path.join(_BREW_PREFIX, 'opt', 'googletest')
+
+cc_config(
+    extra_incs = [
+        os.path.join(_BREW_PREFIX, 'include'),
+        os.path.join(_GTEST_PREFIX, 'include'),
+    ],
+    cppflags = [
+        '-std=c++17',
+    ],
+    linkflags = [
+        '-L' + os.path.join(_BREW_PREFIX, 'lib'),
+        '-L' + os.path.join(_GTEST_PREFIX, 'lib'),
+    ],
+)
+
+cc_library_config(
+    generate_dynamic = False,
+)
+
+cc_test_config(
+    dynamic_link = False,
+    heap_check = '',
+    gperftools_libs = [],
+    gperftools_debug_libs = [],
+    # We point gtest_libs at the static archives provided by the Homebrew
+    # googletest formula. `#<name>` is blade's shorthand for a system library
+    # (resolved via -l<name> against the search paths in cc_config.linkflags).
+    gtest_libs = ['#gtest', '#pthread'],
+    gtest_main_libs = ['#gtest_main', '#pthread'],
+)
+
+proto_library_config(
+    protoc = 'protoc',
+    protobuf_libs = ['#protobuf', '#pthread'],
+    protobuf_path = '',
+    protobuf_incs = [],
+)
+
+thrift_library_config(
+    thrift = 'thrift',
+    thrift_libs = ['#thrift', '#pthread'],
+    thrift_incs = [],
+)
+
+java_test_config(
+    junit_libs = [
+        '//thirdparty/junit:junit',
+    ],
+)

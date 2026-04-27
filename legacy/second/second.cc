@@ -1,5 +1,5 @@
-#include "second/second.h"
-#include "first/first.h"
+#include "legacy/second/second.h"
+#include "legacy/first/first.h"
 
 #include <stdio.h>
 

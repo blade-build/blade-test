@@ -1,4 +1,4 @@
-#include "first/first.h"
+#include "legacy/first/first.h"
 #include <stdio.h>
 
 void first() {
