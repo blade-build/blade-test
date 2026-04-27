@@ -20,7 +20,13 @@ cc_config(
         os.path.join(_BREW_PREFIX, 'include'),
         os.path.join(_GTEST_PREFIX, 'include'),
     ],
-    cppflags = [
+    # `-std=c++17` belongs in cxxflags (C++ only) not in cppflags (the
+    # preprocessor / both-languages bucket) — otherwise blade's `cc`
+    # rule, which is used for generated C stubs such as the ones
+    # emitted by resource_library, will pass it to the C compiler and
+    # fail with "invalid argument '-std=c++17' not allowed with 'C'".
+    # See also: doc/en/FAQ.md in blade-build.
+    cxxflags = [
         '-std=c++17',
     ],
     linkflags = [
