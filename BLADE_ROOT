@@ -14,14 +14,29 @@ msvc_config(target_arch='x64')
 
 # ---- common compiler / linker flags -------------------------------------
 
+_WIN = platform.system() == 'Windows'
+
 _BREW_PREFIX = '/opt/homebrew' if platform.system() == 'Darwin' \
     else '/usr/local' if platform.system() == 'Linux' \
     else None
 
+if _WIN:
+    _VCPKG_ROOT = os.environ.get(
+        'VCPKG_ROOT',
+        os.path.join(os.environ['USERPROFILE'], 'vcpkg'),
+    )
+    _VCPKG_TRIPLET = os.environ.get('VCPKG_DEFAULT_TRIPLET', 'x64-windows')
+    _VCPKG_INSTALLED = os.path.join(_VCPKG_ROOT, 'installed', _VCPKG_TRIPLET)
+    _VCPKG_INC = os.path.join(_VCPKG_INSTALLED, 'include')
+    _VCPKG_LIB = os.path.join(_VCPKG_INSTALLED, 'lib')
+    _EXTRA_INCS = [_VCPKG_INC]
+    _LINKFLAGS = []
+else:
+    _EXTRA_INCS = [os.path.join(_BREW_PREFIX, 'include')] if _BREW_PREFIX else []
+    _LINKFLAGS = ['-L' + os.path.join(_BREW_PREFIX, 'lib')] if _BREW_PREFIX else []
+
 cc_config(
-    extra_incs=[
-        os.path.join(_BREW_PREFIX, 'include'),
-    ] if _BREW_PREFIX else [],
+    extra_incs=_EXTRA_INCS,
     # `-std=c++17` belongs in cxxflags (C++ only) not in cppflags (the
     # preprocessor / both-languages bucket) — otherwise blade's `cc`
     # rule, which is used for generated C stubs such as the ones
@@ -29,9 +44,7 @@ cc_config(
     # fail with "invalid argument '-std=c++17' not allowed with 'C'".
     # See also: doc/en/FAQ.md in blade-build.
     cxxflags=['-std=c++17'],
-    linkflags=[
-        '-L' + os.path.join(_BREW_PREFIX, 'lib'),
-    ] if _BREW_PREFIX else [],
+    linkflags=_LINKFLAGS,
 )
 
 cc_library_config(
@@ -51,12 +64,24 @@ cc_test_config(
 
 # ---- protocol / IDL toolchains -----------------------------------------
 
-proto_library_config(
-    protoc='protoc',
-    protobuf_libs=['#protobuf', '#pthread'],
-    protobuf_path='',
-    protobuf_incs=[],
-)
+if _WIN:
+    proto_library_config(
+        protoc='protoc',
+        protobuf_libs=[
+            os.path.join(_VCPKG_LIB, 'libprotobuf.lib'),
+            os.path.join(_VCPKG_LIB, 'abseil_dll.lib'),
+            os.path.join(_VCPKG_LIB, 'utf8_range.lib'),
+        ],
+        protobuf_path='',
+        protobuf_incs=[_VCPKG_INC],
+    )
+else:
+    proto_library_config(
+        protoc='protoc',
+        protobuf_libs=['#protobuf', '#pthread'],
+        protobuf_path='',
+        protobuf_incs=[],
+    )
 
 thrift_library_config(
     thrift='thrift',
