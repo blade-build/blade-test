@@ -11,6 +11,12 @@ cc_library(
     visibility = 'PUBLIC',
 )
 
+cc_binary(
+    name = 'hello-bin',
+    srcs = 'main.cc',
+    deps = ':hello',
+)
+
 cc_test(
     name = 'hello_test',
     srcs = 'hello_test.cc',
