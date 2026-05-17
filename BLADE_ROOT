@@ -14,12 +14,14 @@ msvc_config(target_arch='x64')
 
 # ---- common compiler / linker flags -------------------------------------
 
-_BREW_PREFIX = '/opt/homebrew' if platform.system() == 'Darwin' else '/usr/local'
+_BREW_PREFIX = '/opt/homebrew' if platform.system() == 'Darwin' \
+    else '/usr/local' if platform.system() == 'Linux' \
+    else None
 
 cc_config(
     extra_incs=[
         os.path.join(_BREW_PREFIX, 'include'),
-    ],
+    ] if _BREW_PREFIX else [],
     # `-std=c++17` belongs in cxxflags (C++ only) not in cppflags (the
     # preprocessor / both-languages bucket) — otherwise blade's `cc`
     # rule, which is used for generated C stubs such as the ones
@@ -29,7 +31,7 @@ cc_config(
     cxxflags=['-std=c++17'],
     linkflags=[
         '-L' + os.path.join(_BREW_PREFIX, 'lib'),
-    ],
+    ] if _BREW_PREFIX else [],
 )
 
 cc_library_config(
