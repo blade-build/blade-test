@@ -24,7 +24,7 @@
 #include <optional>
 #include <string>
 
-#include "gtest/gtest.h"
+#include "suites/test_framework/test_framework.h"
 
 TEST(LexYaccBasic, EvaluatesSimpleExpression) {
     const auto value = blade_calc::Evaluate("1+2");

@@ -11,7 +11,7 @@
 #include "suites/proto_basic/contact.pb.h"
 #include "suites/proto_basic/dir/contact.pb.h"
 
-#include <gtest/gtest.h>
+#include "suites/test_framework/test_framework.h"
 
 namespace {
 

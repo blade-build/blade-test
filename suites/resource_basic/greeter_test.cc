@@ -25,7 +25,7 @@
 #include <string>
 #include <sys/stat.h>
 
-#include "gtest/gtest.h"
+#include "suites/test_framework/test_framework.h"
 
 namespace {
 

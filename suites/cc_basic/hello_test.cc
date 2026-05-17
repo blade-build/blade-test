@@ -5,7 +5,7 @@
 
 #include "suites/cc_basic/hello.h"
 
-#include <gtest/gtest.h>
+#include "suites/test_framework/test_framework.h"
 
 namespace blade_test::cc_basic {
 
