@@ -4,8 +4,8 @@
 # e2e-smoke job (which clones blade-test@master as a sibling); together
 # the two sides pin the contract from both directions:
 #
-#   blade-build PR  -> e2e-smoke clones blade-test@master -> guards v3 -> test
-#   blade-test PR   -> this job clones blade-build@v3     -> guards test -> v3
+#   blade-build PR  -> e2e-smoke clones blade-test@master -> guards v3.0.0-beta -> test
+#   blade-test PR   -> this job clones blade-build@v3.0.0-beta -> guards test -> v3.0.0-beta
 #
 # Keep the host setup steps in sync with
 # blade-build/.github/workflows/python-package.yml :: e2e-smoke. The only
@@ -26,7 +26,7 @@ on:
 
 jobs:
   suites:
-    name: Suites smoke (blade-build v3)
+    name: Suites smoke (blade-build v3.0.0-beta)
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout blade-test
@@ -34,11 +34,11 @@ jobs:
         with:
           path: blade-test
 
-      - name: Checkout blade-build (sibling, v3)
+      - name: Checkout blade-build (sibling, v3.0.0-beta)
         uses: actions/checkout@v6
         with:
           repository: blade-build/blade-build
-          ref: v3
+          ref: v3.0.0-beta
           path: blade-build
 
       - name: Set up Python 3.10
