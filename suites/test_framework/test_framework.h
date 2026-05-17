@@ -54,32 +54,28 @@ inline void RecordFailure(const char* file, int line,
 
 class FailureStream {
 public:
-    FailureStream(const char* file, int line, const char* expr)
-        : file_(file), line_(line), expr_(expr) {}
+    FailureStream(const char* file, int line, const char* expr, bool report)
+        : file_(file), line_(line), expr_(expr), report_(report) {}
 
     ~FailureStream() {
+        if (!report_) return;
         if (!used_) RecordFailure(file_, line_, expr_);
         else        RecordFailure(file_, line_, expr_, ss_.str());
     }
 
     template <typename T>
     FailureStream& operator<<(const T& val) {
-        used_ = true;
-        ss_ << val;
+        if (report_) { used_ = true; ss_ << val; }
         return *this;
     }
 
-    // Required for operator<<(std::endl) and other manipulators.
     FailureStream& operator<<(std::ostream& (*pf)(std::ostream&)) {
-        used_ = true;
-        ss_ << pf;
+        if (report_) { used_ = true; ss_ << pf; }
         return *this;
     }
 
-    // Allow operator<< with std::string_view (C++17) via implicit conversion.
     FailureStream& operator<<(const char* s) {
-        used_ = true;
-        ss_ << s;
+        if (report_) { used_ = true; ss_ << s; }
         return *this;
     }
 
@@ -89,6 +85,7 @@ private:
     const char* expr_;
     std::ostringstream ss_;
     bool used_ = false;
+    bool report_;
 };
 
 // ---- test runner (called from test_main) ----------------------------------
@@ -130,13 +127,15 @@ inline int RunAllTests() {
             BLADE_TF_CONCAT(_blade_test_fn_, __LINE__));         \
     static void BLADE_TF_CONCAT(_blade_test_fn_, __LINE__)()
 
-#define BLADE_TF_EXPECT_(cond) do {                    \
-    if (!(cond)) {                                     \
-        ::blade_test::RecordFailure(                   \
-            __FILE__, __LINE__, "Expected: " #cond);   \
-    }                                                  \
-} while (0)
+// EXPECT_* macros return a FailureStream temporary so that
+// Googletest-style streaming (<< "message") chains onto it.
+// The destructor records the failure only when the condition
+// is false.
+#define BLADE_TF_EXPECT_(cond) \
+    ::blade_test::FailureStream(__FILE__, __LINE__, "Expected: " #cond, !(cond))
 
+// ASSERT_* macros use a traditional do-while(0) block because
+// they must return from the enclosing function on failure.
 #define BLADE_TF_ASSERT_(cond) do {                    \
     if (!(cond)) {                                     \
         ::blade_test::RecordFailure(                   \
@@ -155,4 +154,4 @@ inline int RunAllTests() {
 #define ASSERT_GE(a, b)  BLADE_TF_ASSERT_((a) >= (b))
 
 #define ADD_FAILURE() \
-    ::blade_test::FailureStream(__FILE__, __LINE__, "")
+    ::blade_test::FailureStream(__FILE__, __LINE__, "", true)
