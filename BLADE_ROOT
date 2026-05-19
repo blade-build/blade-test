@@ -10,7 +10,11 @@ import platform
 
 # ---- toolchain selection ------------------------------------------------
 
-msvc_config(target_arch='x64')
+msvc_config(
+    target_arch='x64',
+    cppflags = ['/EHsc', '/D_CRT_SECURE_NO_WARNINGS'],
+    warnings = ['/wd4251', '/wd4996'],
+)
 
 # ---- common compiler / linker flags -------------------------------------
 
