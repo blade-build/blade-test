@@ -12,6 +12,7 @@ import platform
 
 msvc_config(
     target_arch='x64',
+    msvc_version='14.44',
     cppflags = ['/EHsc', '/D_CRT_SECURE_NO_WARNINGS'],
     warnings = ['/wd4251', '/wd4996'],
 )
