@@ -1,7 +1,12 @@
 if blade.path.sep == '\\':
-    _res = blade.path.join(blade.current_source_dir(), 'hello_gui.res')
+    windows_resources(
+        name = 'hello_res',
+        rc_files = ['hello_gui.rc'],
+        resources = ['blade-build-128.ico'],
+    )
     cc_binary(
         name = 'hello_gui',
         srcs = 'hello_gui.c',
-        extra_linkflags = ['/SUBSYSTEM:WINDOWS', 'user32.lib', _res],
+        extra_linkflags = ['/SUBSYSTEM:WINDOWS', 'user32.lib'],
+        deps = [':hello_res'],
     )
