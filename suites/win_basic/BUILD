@@ -1,4 +1,4 @@
-if blade.path.sep == '\\':
+if blade.cc_toolchain.supports_resource_compilation():
     windows_resources(
         name = 'hello_res',
         rc_files = ['hello_gui.rc'],
