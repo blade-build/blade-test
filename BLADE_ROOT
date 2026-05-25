@@ -10,9 +10,25 @@ import platform
 
 # ---- toolchain selection ------------------------------------------------
 
-msvc_config(
+cc_toolchain_config(
+    name='msvc-14.44',
+    kind='msvc',
     target_arch='x64',
     msvc_version='14.44',
+)
+
+cc_toolchain_config(
+    name='msvc-x86',
+    kind='msvc',
+    target_arch='x86',
+)
+
+cc_toolchain_config(
+    name='msvc-auto',
+    kind='msvc',
+)
+
+msvc_config(
     cppflags = ['/EHsc', '/D_CRT_SECURE_NO_WARNINGS'],
     warnings = ['/wd4251', '/wd4996'],
 )

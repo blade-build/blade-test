@@ -1,4 +1,4 @@
-if blade.cc_toolchain.supports_resource_compilation():
+if blade.cc_toolchain.tool('rc') is not None:
     windows_resources(
         name = 'hello_res',
         rc_files = ['hello_gui.rc'],
