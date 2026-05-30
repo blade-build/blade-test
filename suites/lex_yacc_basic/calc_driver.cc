@@ -3,6 +3,14 @@
 
 #include "suites/lex_yacc_basic/calc_driver.h"
 
+// The bison-generated header (emitted because lex_yacc_library passes
+// bison's -d). It is the public header of the `:parser` dep and gives
+// us the authoritative `int yyparse(void);` declaration plus the token
+// definitions — including it is what makes `:parser` a *used* header
+// dependency, and it exercises lex_yacc_library's contract that the
+// generated `<yacc>.hh` is exposed to downstream targets.
+#include "suites/lex_yacc_basic/calc.yy.hh"
+
 #include <mutex>
 #include <string>
 
@@ -22,12 +30,12 @@
 // doing so would mangle-mismatch the references inside
 // libparser.a's calc.yy.cc.o and cause "symbol not found" at link.
 //
-// `yy_scan_string` / `yy_delete_buffer` are flex runtime helpers
-// (not POSIX). The `yy_buffer_state` forward-declaration below
-// mirrors flex's own private typedef so we don't have to include
-// the scanner's internals; this contract has been stable across
-// flex 2.5 / 2.6.
-int  yyparse(void);
+// `yyparse` now comes from calc.yy.hh above. `yy_scan_string` /
+// `yy_delete_buffer` are flex runtime helpers (not POSIX) and are not
+// declared in the bison header, so we still forward-declare them here.
+// The `yy_buffer_state` forward-declaration mirrors flex's own private
+// typedef so we don't have to include the scanner's internals; this
+// contract has been stable across flex 2.5 / 2.6.
 
 // flex runtime — feed an in-memory buffer instead of stdin.
 typedef struct yy_buffer_state* YY_BUFFER_STATE;

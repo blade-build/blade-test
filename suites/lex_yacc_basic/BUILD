@@ -9,7 +9,7 @@
 #   - invokes flex then bison with bison's -d so a header is emitted;
 #   - exposes the generated header (<yacc>.hh) to downstream deps
 #     (the scanner .ll #includes it for the token definitions, and
-#     so does calc_driver.cc indirectly via our own calc_driver.h);
+#     so does calc_driver.cc directly, for the yyparse declaration);
 #   - produces a library that can be linked by an ordinary cc_test.
 #
 # Host toolchain:
