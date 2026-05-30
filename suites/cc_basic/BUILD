@@ -11,10 +11,18 @@ cc_library(
     visibility = 'PUBLIC',
 )
 
-cc_binary(
-    name = 'hello-bin',
-    srcs = 'main.cc',
+cc_library(
+    name = 'world',
+    hdrs = 'world.h',
+    srcs = 'world.cc',
     deps = ':hello',
+    visibility = 'PUBLIC',
+)
+
+cc_binary(
+    name = 'hello-world',
+    srcs = 'main.cc',
+    deps = [':hello', ':world'],
 )
 
 cc_test(
