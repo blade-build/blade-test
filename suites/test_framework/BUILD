@@ -18,4 +18,10 @@ cc_library(
     hdrs = [],
     deps = ':test_framework',
     visibility = 'PUBLIC',
+    # The framework owns a global test registry. Such cross-module mutable
+    # state is not safe to share through an auto-exported shared library
+    # (the registrar and main() would each see their own copy), so keep it
+    # static even inside a `dynamic_link` test. See the cc_library
+    # `generate_dynamic` docs / "Windows DLL support".
+    generate_dynamic = False,
 )
