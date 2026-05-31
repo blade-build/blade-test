@@ -1,0 +1,16 @@
+{
+global:
+    extern "C++" {
+        # Exported literally (exact signature, no wildcard).
+        "mylib::Create()";
+        # Export every member of mylib::Api (Greet, the implicit ctor, ...).
+        # (Api has no virtual functions here, so there is no vtable/typeinfo to
+        # export; a polymorphic class would also need `vtable?for?mylib::Api`
+        # and `typeinfo?for?mylib::Api` -- see the docs.)
+        mylib::Api::*;
+    };
+local:
+    # Everything else stays hidden -- notably the external-linkage helper
+    # mylib::Decorate in api.cc.
+    *;
+};
