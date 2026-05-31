@@ -30,3 +30,14 @@ cc_test(
     srcs = 'hello_test.cc',
     deps = ':hello',
 )
+
+# Same test, linked dynamically: `:hello` is built as a shared library
+# (a DLL + import library on Windows) and loaded at run time, while the
+# test framework stays static (see //suites/test_framework). This is the
+# smoke for the Windows DLL path — the cases must still run and pass.
+cc_test(
+    name = 'hello_dynamic_test',
+    srcs = 'hello_test.cc',
+    deps = ':hello',
+    dynamic_link = True,
+)
