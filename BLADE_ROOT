@@ -87,7 +87,12 @@ cc_test_config(
 
 if _WIN:
     proto_library_config(
-        protoc='protoc',
+        # Use vcpkg's own protoc so the compiler matches the vcpkg
+        # libprotobuf/headers below (protobuf hard-couples protoc to the
+        # runtime version). A bare 'protoc' would resolve to whatever is on
+        # PATH (e.g. a winget protoc of a different version) and break the
+        # build with a protoc/runtime version mismatch.
+        protoc=os.path.join(_VCPKG_INSTALLED, 'tools', 'protobuf', 'protoc.exe'),
         protobuf_libs=[
             os.path.join(_VCPKG_LIB, 'libprotobuf.lib'),
             os.path.join(_VCPKG_LIB, 'abseil_dll.lib'),
