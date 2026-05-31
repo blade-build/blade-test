@@ -41,3 +41,18 @@ cc_test(
     deps = ':hello',
     dynamic_link = True,
 )
+
+# A dynamic_link test that also depends on a *cross-package* library
+# (//suites/cc_basic/farewell). That dependency's DLL is emitted into a
+# different output directory than this test's exe, so it is found only via
+# blade's runtime DLL discovery (flattened runfiles + PATH) -- not the default
+# exe-directory search that covers the same-package `:hello` DLL.
+cc_test(
+    name = 'cross_package_dynamic_test',
+    srcs = 'cross_package_dynamic_test.cc',
+    deps = [
+        ':hello',
+        '//suites/cc_basic/farewell:farewell',
+    ],
+    dynamic_link = True,
+)
