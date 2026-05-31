@@ -4,10 +4,11 @@
 # shared library's dynamic symbol table; the external-linkage helper
 # mylib::Decorate is hidden by its `local: *;` clause.
 #
-# `export_map` is a GNU-ld feature (`--version-script`), so the filtering
-# applies on Linux (and MinGW). On the MSVC toolchain the attribute is
-# currently ignored -- exports are driven by a generated `.def` instead. See
-# blade-build #1182 (the attribute) and #1181 (the Windows DLL path).
+# On Linux `export_map` is a GNU-ld `--version-script`. On MSVC there is no
+# such option, so Blade applies the map by filtering the auto-generated `.def`
+# (matching each symbol's demangled name); name-only demangling means overloads
+# collapse and quoted signatures match by name only. See blade-build #1182 (the
+# attribute), #1181 (the Windows DLL path) and #1194 (the MSVC translation).
 
 cc_library(
     name = 'api',
