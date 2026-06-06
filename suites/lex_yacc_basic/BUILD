@@ -33,9 +33,14 @@ lex_yacc_library(
     # suppress just that one diagnostic here rather than reaching
     # for the sledgehammer (warning='no', which blade rightly
     # reserves for third-party code).
-    extra_cppflags = [
-        '-Wno-sign-compare',
-    ],
+    #
+    # GCC/Clang only: `-Wsign-compare` has no cl.exe equivalent (MSVC uses
+    # numbered C4018 etc.) and cl rejects the flag outright, so guard it to
+    # non-MSVC. `extra_cppflags` is the verbatim escape hatch -- blade does not
+    # filter it -- so toolchain-specific flags must be selected by the BUILD.
+    extra_cppflags = (
+        [] if blade.cc_toolchain.cc_vendor == 'msvc' else ['-Wno-sign-compare']
+    ),
 )
 
 cc_library(
