@@ -1,8 +1,12 @@
 {
 global:
     extern "C++" {
-        # Exported literally (exact signature, no wildcard).
-        "mylib::Create()";
+        # Match Create by name (glob), not a quoted exact signature: a quoted
+        # signature like "mylib::Create()" warns on MSVC, where name-only
+        # demangling has no signature to match. The glob's `*` covers the `()`
+        # in the GNU-ld demangled name and the empty suffix in the MSVC
+        # name-only form, so it selects the symbol on every platform.
+        mylib::Create*;
         # Export every member of mylib::Api (Greet, the implicit ctor, ...).
         # (Api has no virtual functions here, so there is no vtable/typeinfo to
         # export; a polymorphic class would also need `vtable?for?mylib::Api`
