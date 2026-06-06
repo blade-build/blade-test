@@ -1,11 +1,20 @@
 ---
 # Cross-repo smoke for this workspace: run the full //suites/... against
-# the sibling blade-build/v3 HEAD. This is the mirror of blade-build's own
+# the sibling blade-build@master HEAD. This is the mirror of blade-build's own
 # e2e-smoke job (which clones blade-test@master as a sibling); together
-# the two sides pin the contract from both directions:
+# the two sides pin the contract from both directions, each against the other's
+# HEAD:
 #
-#   blade-build PR  -> e2e-smoke clones blade-test@master -> guards v3.0.0-beta -> test
-#   blade-test PR   -> this job clones blade-build@v3.0.0-beta -> guards test -> v3.0.0-beta
+#   blade-build PR  -> e2e-smoke clones blade-test@master -> builds suites
+#   blade-test PR   -> this job clones blade-build@master  -> builds suites
+#
+# Tracking master (not a frozen release tag) is deliberate: the suites are test
+# fixtures for the blade *under development*, so they must validate against
+# current blade -- otherwise a suite exercising an unreleased fix can never go
+# green, and blade-test's own BLADE_ROOT (which uses post-release config like
+# cc_toolchain_config) fails to even load on an old pinned blade. A "does the
+# last RELEASE still build the suites" check, if wanted, belongs in a separate
+# non-blocking scheduled job, not this PR gate.
 #
 # Keep the host setup steps in sync with
 # blade-build/.github/workflows/python-package.yml :: e2e-smoke. The only
@@ -26,7 +35,7 @@ on:
 
 jobs:
   suites:
-    name: Suites smoke (blade-build v3.0.0-beta)
+    name: Suites smoke (blade-build master)
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout blade-test
@@ -34,11 +43,11 @@ jobs:
         with:
           path: blade-test
 
-      - name: Checkout blade-build (sibling, v3.0.0-beta)
+      - name: Checkout blade-build (sibling, master)
         uses: actions/checkout@v6
         with:
           repository: blade-build/blade-build
-          ref: v3.0.0-beta
+          ref: master
           path: blade-build
 
       - name: Set up Python 3.10
