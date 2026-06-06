@@ -87,4 +87,6 @@ jobs:
       - name: Run blade-test suites
         working-directory: blade-test
         run: |
-          ./blade.sh test //suites/...
+          # CUDA toolkit not available on CI — skip cu_basic (mirrors
+          # blade-build e2e-smoke).
+          ./blade.sh test //suites/... --exclude-targets '//suites/cu_basic/...'
