@@ -1,0 +1,26 @@
+# Custom rules (experimental, blade-build #829) exercised by this suite.
+#
+# gen_answer: generates a C header consumed by a cc_test (the e2e -- the test
+#   only compiles+passes if the generated #define is correct and reachable).
+# concat:     concatenates its srcs into one output (a plain smoke).
+
+def _gen_answer(ctx):
+    h = ctx.declare_header(ctx.name + '.h')
+    ctx.actions.run_shell(
+        command="echo '#define CUSTOM_RULE_ANSWER 42' > $OUTS",
+        cmd_bat='echo #define CUSTOM_RULE_ANSWER 42 > $OUTS',
+        outputs=[h])
+
+gen_answer = define_rule(
+    name='gen_answer', attrs={}, provides_cc=True, action=_gen_answer)
+
+
+def _concat(ctx):
+    out = ctx.declare_output(ctx.name + '.txt')
+    ctx.actions.run_shell(
+        command='cat $SRCS > $OUTS',
+        cmd_bat='type $SRCS > $OUTS',
+        outputs=[out])
+
+concat = define_rule(
+    name='concat', attrs={'srcs': attr.src_list()}, action=_concat)
