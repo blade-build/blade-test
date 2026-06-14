@@ -122,3 +122,37 @@ java_test_config(
         '//thirdparty/junit:junit',
     ],
 )
+
+# ---- native vcpkg integration smoke (//suites/vcpkg_basic) --------------
+#
+# Exercises blade's `vcpkg#<port>:<lib>` support against real ports (fmt,
+# gflags, glog, openssl). Gated on $VCPKG_ROOT so it is OFF by default: the
+# rest of the suites (and blade-build's cross-repo e2e-smoke, which runs
+# //suites/... without VCPKG_ROOT) build with no vcpkg dependency. Only the
+# dedicated `vcpkg` CI job (and a local run that exports VCPKG_ROOT) turns it
+# on. //suites/vcpkg_basic/BUILD gates on the same variable, so when it is
+# unset that suite declares no targets at all.
+_NATIVE_VCPKG_ROOT = os.environ.get('VCPKG_ROOT', '')
+
+# suites/vcpkg_basic/BUILD reads $VCPKG_ROOT directly, which needs the
+# unrestricted DSL in that one directory.
+global_config(
+    unrestricted_dsl_dirs={'suites/vcpkg_basic'},
+)
+
+if _NATIVE_VCPKG_ROOT:
+    vcpkg_config(
+        manage=True,
+        root=_NATIVE_VCPKG_ROOT,
+        packages={
+            'fmt': {},
+            # vcpkg's glog depends on gflags; a *static* gflags trips
+            # gflags-config.cmake's nothreads-target bug, so force the threaded
+            # gflags target. link_all_symbols keeps the flag-registration static
+            # initializers in the archives.
+            'gflags': {'link_all_symbols': True},
+            'glog': {'link_all_symbols': True,
+                     'cmake_options': ['-DGFLAGS_NOTHREADS=OFF']},
+            'openssl': {},
+        },
+    )

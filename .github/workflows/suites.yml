@@ -90,3 +90,54 @@ jobs:
           # CUDA toolkit not available on CI — skip cu_basic (mirrors
           # blade-build e2e-smoke).
           ./blade.sh test //suites/... --exclude-targets '//suites/cu_basic/...'
+
+  # Native vcpkg integration (//suites/vcpkg_basic). Separate job because it is
+  # gated on $VCPKG_ROOT (so it stays out of the shared //suites/... run above
+  # and blade-build's e2e-smoke) and because installing real ports (fmt, gflags,
+  # glog, openssl) wants its own binary-archive cache. GitHub-hosted runners
+  # ship a bootstrapped vcpkg at $VCPKG_INSTALLATION_ROOT.
+  vcpkg:
+    name: vcpkg suite (native vcpkg# ports)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout blade-test
+        uses: actions/checkout@v6
+        with:
+          path: blade-test
+
+      - name: Checkout blade-build (sibling, master)
+        uses: actions/checkout@v6
+        with:
+          repository: blade-build/blade-build
+          ref: master
+          path: blade-build
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install ninja
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+
+      - name: Cache vcpkg binary archives
+        # blade uses vcpkg's default local binary cache (~/.cache/vcpkg/archives);
+        # persist it so the cold build of openssl/glog is paid once. Keyed on the
+        # package set in BLADE_ROOT so it invalidates when that changes.
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-archives-${{ runner.os }}-${{ hashFiles('blade-test/BLADE_ROOT') }}
+          restore-keys: |
+            vcpkg-archives-${{ runner.os }}-
+
+      - name: Run vcpkg suite
+        working-directory: blade-test
+        run: |
+          # Enable the vcpkg suite by pointing blade at the runner's vcpkg.
+          export VCPKG_ROOT="$VCPKG_INSTALLATION_ROOT"
+          echo "Using VCPKG_ROOT=$VCPKG_ROOT"
+          "$VCPKG_ROOT/vcpkg" version | head -1 || true
+          ./blade.sh test //suites/vcpkg_basic/...
