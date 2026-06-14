@@ -38,6 +38,13 @@ if os.environ.get('VCPKG_ROOT'):
         defs=_defs,
         # fmt's headers static_assert on /utf-8 under MSVC.
         extra_cppflags=(['/utf-8'] if _msvc else []),
+        # System libraries the ports pull in on Windows (their .pc Libs.private,
+        # which blade's MSVC vcpkg path does not auto-resolve yet): glog ->
+        # dbghelp (Sym*), gflags -> shlwapi (PathMatchSpec), openssl ->
+        # advapi32/user32/crypt32/ws2_32/gdi32/bcrypt.
+        extra_linkflags=(['dbghelp.lib', 'shlwapi.lib', 'advapi32.lib',
+                          'user32.lib', 'crypt32.lib', 'ws2_32.lib',
+                          'gdi32.lib', 'bcrypt.lib'] if _msvc else []),
         deps=[
             'vcpkg#fmt:fmt',
             # glog before gflags: glog references gflags symbols, so on a static
