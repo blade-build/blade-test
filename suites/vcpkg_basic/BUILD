@@ -12,8 +12,12 @@ import os
 if os.environ.get('VCPKG_ROOT'):
     # glog 0.7's <glog/logging.h> requires the consumer to define this export
     # macro.
+    _msvc = blade.cc_toolchain.cc_vendor == 'msvc'
+    # vcpkg's openssl keeps the `lib` prefix on MSVC (libcrypto.lib), unlike most
+    # ports, so the library basename differs by platform.
+    _crypto = 'vcpkg#openssl:libcrypto' if _msvc else 'vcpkg#openssl:crypto'
     _defs = ['GLOG_USE_GLOG_EXPORT']
-    if blade.cc_toolchain.cc_vendor == 'msvc':
+    if _msvc:
         # glog/gflags include <windows.h>, which (a) defines min/max macros that
         # break the C++ std/glog templates -> NOMINMAX; (b) defines an ERROR
         # macro that collides with glog's abbreviated severities ->
@@ -36,6 +40,6 @@ if os.environ.get('VCPKG_ROOT'):
             # link gflags must come after it on the command line.
             'vcpkg#glog:glog',
             'vcpkg#gflags:gflags',
-            'vcpkg#openssl:crypto',
+            _crypto,
         ],
     )
