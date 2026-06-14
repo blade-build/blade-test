@@ -141,3 +141,51 @@ jobs:
           echo "Using VCPKG_ROOT=$VCPKG_ROOT"
           "$VCPKG_ROOT/vcpkg" version | head -1 || true
           ./blade.sh test //suites/vcpkg_basic/...
+
+  # Same vcpkg suite on Windows / MSVC -- exercises the native MSVC vcpkg path
+  # (vcpkg's own toolchain for ports + cl.exe for the test). MSVC env comes from
+  # msvc-dev-cmd; blade is invoked via blade.bat (python src) from the sibling
+  # checkout, mirroring setup.bat.
+  vcpkg-windows:
+    name: vcpkg suite (Windows MSVC)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout blade-test
+        uses: actions/checkout@v6
+        with:
+          path: blade-test
+
+      - name: Checkout blade-build (sibling, master)
+        uses: actions/checkout@v6
+        with:
+          repository: blade-build/blade-build
+          ref: master
+          path: blade-build
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ninja
+        run: python -m pip install ninja
+
+      - name: Set up MSVC dev environment
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Cache vcpkg binary archives
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\vcpkg\archives
+          key: vcpkg-archives-${{ runner.os }}-${{ hashFiles('blade-test/BLADE_ROOT') }}
+          restore-keys: |
+            vcpkg-archives-${{ runner.os }}-
+
+      - name: Run vcpkg suite
+        working-directory: blade-test
+        shell: pwsh
+        run: |
+          $env:VCPKG_ROOT = $env:VCPKG_INSTALLATION_ROOT
+          Write-Host "Using VCPKG_ROOT=$env:VCPKG_ROOT"
+          & "$env:VCPKG_ROOT\vcpkg.exe" version
+          ..\blade-build\blade.bat test '//suites/vcpkg_basic/...'

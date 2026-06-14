@@ -10,6 +10,17 @@
 import os
 
 if os.environ.get('VCPKG_ROOT'):
+    # glog 0.7's <glog/logging.h> requires the consumer to define this export
+    # macro.
+    _defs = ['GLOG_USE_GLOG_EXPORT']
+    if blade.cc_toolchain.cc_vendor == 'msvc':
+        # glog/gflags include <windows.h>, which (a) defines min/max macros that
+        # break the C++ std/glog templates -> NOMINMAX; (b) defines an ERROR
+        # macro that collides with glog's abbreviated severities ->
+        # GLOG_NO_ABBREVIATED_SEVERITIES; and the headers default to dllimport
+        # decoration -> GFLAGS_IS_A_DLL=0 for the static gflags we link.
+        _defs += ['NOMINMAX', 'GLOG_NO_ABBREVIATED_SEVERITIES',
+                  'GFLAGS_IS_A_DLL=0']
     cc_test(
         name='vcpkg_test',
         srcs=[
@@ -18,9 +29,7 @@ if os.environ.get('VCPKG_ROOT'):
             'glog_test.cc',
             'openssl_test.cc',
         ],
-        # glog 0.7's <glog/logging.h> requires the consumer to define this
-        # export macro.
-        defs=['GLOG_USE_GLOG_EXPORT'],
+        defs=_defs,
         deps=[
             'vcpkg#fmt:fmt',
             # glog before gflags: glog references gflags symbols, so on a static
