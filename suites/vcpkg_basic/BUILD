@@ -36,6 +36,8 @@ if os.environ.get('VCPKG_ROOT'):
             'openssl_test.cc',
         ],
         defs=_defs,
+        # fmt's headers static_assert on /utf-8 under MSVC.
+        extra_cppflags=(['/utf-8'] if _msvc else []),
         deps=[
             'vcpkg#fmt:fmt',
             # glog before gflags: glog references gflags symbols, so on a static
