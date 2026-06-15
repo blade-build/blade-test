@@ -92,8 +92,7 @@ jobs:
           # (below); excluding it here keeps this job (and the mirrored
           # e2e-smoke) free of any vcpkg install.
           ./blade.sh test //suites/... \
-            --exclude-targets '//suites/cu_basic/...' \
-            --exclude-targets '//suites/vcpkg_basic/...'
+            --exclude-targets '//suites/cu_basic/...,//suites/vcpkg_basic/...'
 
   # Native vcpkg integration (//suites/vcpkg_basic). Separate job because it is
   # gated on $VCPKG_ROOT (so it stays out of the shared //suites/... run above
