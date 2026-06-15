@@ -25,8 +25,12 @@ cc_toolchain_config(
     kind='msvc',
 )
 
+# append_ (not a bare assignment) so we keep blade's MSVC defaults -- notably
+# /utf-8 (fmt's headers static_assert on it) and /volatile:iso -- instead of
+# replacing them. /EHsc is already in the default cxxflags, so it is not repeated
+# here. (warnings is a deliberate replace: we want only these, not the default.)
 msvc_config(
-    cppflags = ['/EHsc', '/D_CRT_SECURE_NO_WARNINGS'],
+    append_cppflags = ['/D_CRT_SECURE_NO_WARNINGS'],
     warnings = ['/wd4251', '/wd4996'],
 )
 
