@@ -5,9 +5,6 @@
 # test library installation is required beyond the protobuf / thrift
 # toolchains listed below.
 
-import os
-import platform
-
 # ---- toolchain selection ------------------------------------------------
 
 cc_toolchain_config(
@@ -35,26 +32,26 @@ msvc_config(
 
 # ---- common compiler / linker flags -------------------------------------
 
-_WIN = platform.system() == 'Windows'
+_WIN = blade.host_os == 'windows'
 
-_BREW_PREFIX = '/opt/homebrew' if platform.system() == 'Darwin' \
-    else '/usr/local' if platform.system() == 'Linux' \
+_BREW_PREFIX = '/opt/homebrew' if blade.host_os == 'darwin' \
+    else '/usr/local' if blade.host_os == 'linux' \
     else None
 
 if _WIN:
-    _VCPKG_ROOT = os.environ.get(
+    _VCPKG_ROOT = blade.getenv(
         'VCPKG_ROOT',
-        os.path.join(os.environ['USERPROFILE'], 'vcpkg'),
+        blade.path.join(blade.getenv('USERPROFILE'), 'vcpkg'),
     )
-    _VCPKG_TRIPLET = os.environ.get('VCPKG_DEFAULT_TRIPLET', 'x64-windows')
-    _VCPKG_INSTALLED = os.path.join(_VCPKG_ROOT, 'installed', _VCPKG_TRIPLET)
-    _VCPKG_INC = os.path.join(_VCPKG_INSTALLED, 'include')
-    _VCPKG_LIB = os.path.join(_VCPKG_INSTALLED, 'lib')
+    _VCPKG_TRIPLET = blade.getenv('VCPKG_DEFAULT_TRIPLET', 'x64-windows')
+    _VCPKG_INSTALLED = blade.path.join(_VCPKG_ROOT, 'installed', _VCPKG_TRIPLET)
+    _VCPKG_INC = blade.path.join(_VCPKG_INSTALLED, 'include')
+    _VCPKG_LIB = blade.path.join(_VCPKG_INSTALLED, 'lib')
     _EXTRA_INCS = [_VCPKG_INC]
     _LINKFLAGS = []
 else:
-    _EXTRA_INCS = [os.path.join(_BREW_PREFIX, 'include')] if _BREW_PREFIX else []
-    _LINKFLAGS = ['-L' + os.path.join(_BREW_PREFIX, 'lib')] if _BREW_PREFIX else []
+    _EXTRA_INCS = [blade.path.join(_BREW_PREFIX, 'include')] if _BREW_PREFIX else []
+    _LINKFLAGS = ['-L' + blade.path.join(_BREW_PREFIX, 'lib')] if _BREW_PREFIX else []
 
 cc_config(
     extra_incs=_EXTRA_INCS,
@@ -99,11 +96,11 @@ if _WIN:
         # runtime version). A bare 'protoc' would resolve to whatever is on
         # PATH (e.g. a winget protoc of a different version) and break the
         # build with a protoc/runtime version mismatch.
-        protoc=os.path.join(_VCPKG_INSTALLED, 'tools', 'protobuf', 'protoc.exe'),
+        protoc=blade.path.join(_VCPKG_INSTALLED, 'tools', 'protobuf', 'protoc.exe'),
         protobuf_libs=[
-            os.path.join(_VCPKG_LIB, 'libprotobuf.lib'),
-            os.path.join(_VCPKG_LIB, 'abseil_dll.lib'),
-            os.path.join(_VCPKG_LIB, 'utf8_range.lib'),
+            blade.path.join(_VCPKG_LIB, 'libprotobuf.lib'),
+            blade.path.join(_VCPKG_LIB, 'abseil_dll.lib'),
+            blade.path.join(_VCPKG_LIB, 'utf8_range.lib'),
         ],
         protobuf_path='',
         protobuf_incs=[_VCPKG_INC],
@@ -142,8 +139,8 @@ java_test_config(
 # and GitHub-hosted runners also ship VCPKG_INSTALLATION_ROOT.
 vcpkg_config(
     manage=True,
-    root=(os.environ.get('VCPKG_ROOT')
-          or os.environ.get('VCPKG_INSTALLATION_ROOT') or ''),
+    root=(blade.getenv('VCPKG_ROOT')
+          or blade.getenv('VCPKG_INSTALLATION_ROOT') or ''),
     packages={
         'fmt': {},
         # vcpkg's glog depends on gflags; a *static* gflags trips
