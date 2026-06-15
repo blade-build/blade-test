@@ -88,8 +88,12 @@ jobs:
         working-directory: blade-test
         run: |
           # CUDA toolkit not available on CI — skip cu_basic (mirrors
-          # blade-build e2e-smoke).
-          ./blade.sh test //suites/... --exclude-targets '//suites/cu_basic/...'
+          # blade-build e2e-smoke). vcpkg_basic has its own dedicated jobs
+          # (below); excluding it here keeps this job (and the mirrored
+          # e2e-smoke) free of any vcpkg install.
+          ./blade.sh test //suites/... \
+            --exclude-targets '//suites/cu_basic/...' \
+            --exclude-targets '//suites/vcpkg_basic/...'
 
   # Native vcpkg integration (//suites/vcpkg_basic). Separate job because it is
   # gated on $VCPKG_ROOT (so it stays out of the shared //suites/... run above

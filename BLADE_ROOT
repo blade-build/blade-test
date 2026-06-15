@@ -133,33 +133,26 @@ java_test_config(
 # ---- native vcpkg integration smoke (//suites/vcpkg_basic) --------------
 #
 # Exercises blade's `vcpkg#<port>:<lib>` support against real ports (fmt,
-# gflags, glog, openssl). Gated on $VCPKG_ROOT so it is OFF by default: the
-# rest of the suites (and blade-build's cross-repo e2e-smoke, which runs
-# //suites/... without VCPKG_ROOT) build with no vcpkg dependency. Only the
-# dedicated `vcpkg` CI job (and a local run that exports VCPKG_ROOT) turns it
-# on. //suites/vcpkg_basic/BUILD gates on the same variable, so when it is
-# unset that suite declares no targets at all.
-_NATIVE_VCPKG_ROOT = os.environ.get('VCPKG_ROOT', '')
-
-# suites/vcpkg_basic/BUILD reads $VCPKG_ROOT directly, which needs the
-# unrestricted DSL in that one directory.
-global_config(
-    unrestricted_dsl_dirs={'suites/vcpkg_basic'},
+# gflags, glog, openssl). This is a fixed property of the workspace, so it is
+# declared unconditionally; blade only runs `vcpkg install` when a build
+# actually references a vcpkg target (demand-driven), so suites that don't use
+# vcpkg -- and blade-build's cross-repo e2e-smoke, which excludes vcpkg_basic --
+# build with no vcpkg dependency. `root` only locates the vcpkg tool (needed
+# when a vcpkg target is built); the dedicated `vcpkg` CI jobs export VCPKG_ROOT,
+# and GitHub-hosted runners also ship VCPKG_INSTALLATION_ROOT.
+vcpkg_config(
+    manage=True,
+    root=(os.environ.get('VCPKG_ROOT')
+          or os.environ.get('VCPKG_INSTALLATION_ROOT') or ''),
+    packages={
+        'fmt': {},
+        # vcpkg's glog depends on gflags; a *static* gflags trips
+        # gflags-config.cmake's nothreads-target bug, so force the threaded
+        # gflags target. link_all_symbols keeps the flag-registration static
+        # initializers in the archives.
+        'gflags': {'link_all_symbols': True},
+        'glog': {'link_all_symbols': True,
+                 'cmake_options': ['-DGFLAGS_NOTHREADS=OFF']},
+        'openssl': {},
+    },
 )
-
-if _NATIVE_VCPKG_ROOT:
-    vcpkg_config(
-        manage=True,
-        root=_NATIVE_VCPKG_ROOT,
-        packages={
-            'fmt': {},
-            # vcpkg's glog depends on gflags; a *static* gflags trips
-            # gflags-config.cmake's nothreads-target bug, so force the threaded
-            # gflags target. link_all_symbols keeps the flag-registration static
-            # initializers in the archives.
-            'gflags': {'link_all_symbols': True},
-            'glog': {'link_all_symbols': True,
-                     'cmake_options': ['-DGFLAGS_NOTHREADS=OFF']},
-            'openssl': {},
-        },
-    )
