@@ -32,8 +32,6 @@ cc_test(
         'openssl_test.cc',
     ],
     defs=_defs,
-    # fmt's headers static_assert on /utf-8 under MSVC.
-    extra_cppflags=(['/utf-8'] if _msvc else []),
     # The Windows system libs these ports pull in (glog -> dbghelp, gflags ->
     # shlwapi, openssl -> advapi32/crypt32/ws2_32/...) are resolved automatically
     # from each port's .pc Libs.private now (blade-build #1322).
