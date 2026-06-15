@@ -67,13 +67,7 @@ cc_config(
     # See also: doc/en/FAQ.md in blade-build.
     cxxflags=['-std=c++17'],
     linkflags=_LINKFLAGS,
-    # On Windows the only suite built in CI is //suites/vcpkg_basic, and it
-    # trips a false "missing dependency" on vcpkg's own installed headers:
-    # blade's inclusion check skips them via -isystem on POSIX, but on MSVC the
-    # system-include-dir match misses them (a path-normalization gap in the
-    # MSVC vcpkg path -- TODO fix in blade). Demote to a warning on Windows;
-    # POSIX keeps the strict error so the other suites still enforce it.
-    hdr_dep_missing_severity='warning' if _WIN else 'error',
+    hdr_dep_missing_severity='error',
 )
 
 cc_library_config(
