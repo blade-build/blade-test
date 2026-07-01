@@ -109,6 +109,10 @@ else:
         protobuf_libs=['#protobuf', '#pthread'],
         protobuf_path='',
         protobuf_incs=[],
+        # protoc-gen-go for //suites/go_proto (proto -> Go overlay). CI installs
+        # it via `go install google.golang.org/protobuf/cmd/protoc-gen-go` and
+        # puts $(go env GOPATH)/bin on PATH, so a bare name resolves.
+        protoc_go_plugin='protoc-gen-go',
     )
 
 thrift_library_config(
