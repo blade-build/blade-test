@@ -16,10 +16,6 @@
 *.dylib
 *.dll
 
-# Fortran module files
-*.mod
-*.smod
-
 # Compiled Static libraries
 *.lai
 *.la
@@ -32,6 +28,7 @@
 *.app
 
 /blade-bin
+/build_*
 /build32_*
 /build64_*
 

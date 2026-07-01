@@ -125,6 +125,14 @@ java_test_config(
     ],
 )
 
+# ---- Go -----------------------------------------------------------------
+#
+# Blade builds Go in module mode (see //suites/go_basic, which has its own
+# go.mod). `go` comes from PATH; CI installs it via actions/setup-go.
+go_config(
+    go='go',
+)
+
 # ---- native vcpkg integration smoke (//suites/vcpkg_basic) --------------
 #
 # Exercises blade's `vcpkg#<port>:<lib>` support against real ports (fmt,
