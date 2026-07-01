@@ -61,6 +61,11 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Set up Go  # //suites/go_basic (modules-only Go rules)
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
       - name: Install ninja
         run: |
           sudo apt-get update
@@ -83,6 +88,7 @@ jobs:
           java -version
           ninja --version
           protoc --version
+          go version
 
       - name: Run blade-test suites
         working-directory: blade-test
