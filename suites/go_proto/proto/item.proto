@@ -1,0 +1,17 @@
+// Copyright (c) 2026 The Blade Authors.
+// All rights reserved.
+
+// A .proto consumed from Go. `option go_package` is the .proto directory's
+// in-module import path -- blade generates the .pb.go into the build dir under
+// that path and threads it into consuming go targets via `go build -overlay`,
+// so nothing is checked in beside this file (see build_rules/go.md).
+syntax = "proto3";
+
+package blade_test.go_proto;
+
+option go_package = "blade.test/goproto/proto";
+
+message Item {
+    string name = 1;
+    int32 quantity = 2;
+}
